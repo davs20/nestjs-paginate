@@ -91,6 +91,7 @@ export interface PaginateConfig<T> {
     ignoreSearchByInQueryParam?: boolean
     ignoreSelectInQueryParam?: boolean
     multiWordSearch?: boolean
+    sapFuzzySearch?: boolean
 }
 
 export enum PaginationLimit {
