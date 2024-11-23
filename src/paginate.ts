@@ -372,7 +372,7 @@ export async function paginate<T extends ObjectLiteral>(
                             virtualQuery
                         )
 
-                        qb.orWhere(`${property.column} CONTAINS ("${property.column}", '"${query.search}"', FUZZY(0.9, 'similarCalculationMode=search, fuzzySubstringMatch=anywhere,searchMode=alphanum'))`)
+                        qb.orWhere(`CONTAINS ("${property.column}", '"${query.search}"', FUZZY(0.9, 'similarCalculationMode=search, fuzzySubstringMatch=anywhere,searchMode=alphanum'))`)
 
                     }
                 }
