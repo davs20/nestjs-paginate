@@ -357,7 +357,7 @@ export async function paginate<T extends ObjectLiteral>(
                 // Explicitly handle the default case - multiWordSearch defaults to false
                 const useMultiWordSearch = config.multiWordSearch ?? false
                 const useSapFuzzySearch = config.sapFuzzySearch ?? false
-                if(sapFuzzySearch) {
+                if(useSapFuzzySearch) {
                     for (const column of searchBy) {
                         const property = getPropertiesByColumnName(column)
                         const { isVirtualProperty, query: virtualQuery } = extractVirtualProperty(qb, property)
