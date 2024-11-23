@@ -355,6 +355,32 @@ export async function paginate<T extends ObjectLiteral>(
             new Brackets((qb: SelectQueryBuilder<T>) => {
                 // Explicitly handle the default case - multiWordSearch defaults to false
                 const useMultiWordSearch = config.multiWordSearch ?? false
+                const useSapFuzzySearch = config.sapFuzzySearch ?? false
+                if(sapFuzzySearch) {
+                    for (const column of searchBy) {
+                        const property = getPropertiesByColumnName(column)
+                        const { isVirtualProperty, query: virtualQuery } = extractVirtualProperty(qb, property)
+                        const isRelation = checkIsRelation(qb, property.propertyPath)
+                        const isEmbedded = checkIsEmbedded(qb, property.propertyPath)
+                        const alias = fixColumnAlias(
+                            property,
+                            qb.alias,
+                            isRelation,
+                            isVirtualProperty,
+                            isEmbedded,
+                            virtualQuery
+                        )
+
+                        const condition: WherePredicateOperator = {
+                            operator: 'contains',
+                            parameters: [alias, `:${property.column}`],
+                        }
+
+                        qb.orWhere(qb['createWhereConditionExpression'](condition), {
+                            [property.column]: `("${property.column}", '"${query.search}"', FUZZY(0.9, 'similarCalculationMode=search, fuzzySubstringMatch=anywhere,searchMode=alphanum'))`,
+                        })
+
+                }
                 if (!useMultiWordSearch) {
                     // Strict search mode (default behavior)
                     for (const column of searchBy) {
@@ -376,13 +402,10 @@ export async function paginate<T extends ObjectLiteral>(
                             parameters: [alias, `:${property.column}`],
                         }
 
-                        if (['postgres', 'cockroachdb'].includes(queryBuilder.connection.options.type)) {
-                            condition.parameters[0] = `CAST(${condition.parameters[0]} AS text)`
-                        }
-
                         qb.orWhere(qb['createWhereConditionExpression'](condition), {
                             [property.column]: `%${query.search}%`,
                         })
+                        
                     }
                 } else {
                     // Multi-word search mode
