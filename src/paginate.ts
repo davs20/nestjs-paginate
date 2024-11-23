@@ -160,9 +160,9 @@ function flattenWhereAndTransform<T>(
                         pathSplit.length === 1
                             ? ''
                             : `_${pathSplit
-                                  .slice(0, -1)
-                                  .map((p) => p + '_rel')
-                                  .join('_')}`
+                                .slice(0, -1)
+                                .map((p) => p + '_rel')
+                                .join('_')}`
                     const tableName = pathSplit[pathSplit.length - 1]
                     const tableAliasWithProperty = `${queryBuilder.alias}${fullPath}.${tableName}`
                     const joinTableAlias = `${queryBuilder.alias}${fullPath}_${tableName}_rel`
@@ -201,12 +201,12 @@ export async function paginate<T extends ObjectLiteral>(
         query.limit === PaginationLimit.COUNTER_ONLY
             ? PaginationLimit.COUNTER_ONLY
             : isPaginated === true
-            ? maxLimit === PaginationLimit.NO_PAGINATION
-                ? query.limit ?? defaultLimit
-                : query.limit === PaginationLimit.NO_PAGINATION
-                ? defaultLimit
-                : Math.min(query.limit ?? defaultLimit, maxLimit)
-            : defaultLimit
+                ? maxLimit === PaginationLimit.NO_PAGINATION
+                    ? query.limit ?? defaultLimit
+                    : query.limit === PaginationLimit.NO_PAGINATION
+                        ? defaultLimit
+                        : Math.min(query.limit ?? defaultLimit, maxLimit)
+                : defaultLimit
 
     const sortBy = [] as SortBy<T>
     const searchBy: Column<T>[] = []
@@ -357,7 +357,7 @@ export async function paginate<T extends ObjectLiteral>(
                 // Explicitly handle the default case - multiWordSearch defaults to false
                 const useMultiWordSearch = config.multiWordSearch ?? false
                 const useSapFuzzySearch = config.sapFuzzySearch ?? false
-                if(useSapFuzzySearch) {
+                if (useSapFuzzySearch) {
                     for (const column of searchBy) {
                         const property = getPropertiesByColumnName(column)
                         const { isVirtualProperty, query: virtualQuery } = extractVirtualProperty(qb, property)
@@ -372,7 +372,7 @@ export async function paginate<T extends ObjectLiteral>(
                             virtualQuery
                         )
 
-                        const condition: WherePredicateOperator = {
+                        const condition = {
                             operator: 'contains',
                             parameters: [alias, `:${property.column}`],
                         }
@@ -403,7 +403,7 @@ export async function paginate<T extends ObjectLiteral>(
                             operator: 'ilike',
                             parameters: [alias, `:${property.column}`],
                         }
-                        
+
                         if (['postgres', 'cockroachdb'].includes(queryBuilder.connection.options.type)) {
                             condition.parameters[0] = `CAST(${condition.parameters[0]} AS text)`
                         }
@@ -411,7 +411,7 @@ export async function paginate<T extends ObjectLiteral>(
                         qb.orWhere(qb['createWhereConditionExpression'](condition), {
                             [property.column]: `%${query.search}%`,
                         })
-                        
+
                     }
                 } else {
                     // Multi-word search mode
@@ -483,12 +483,12 @@ export async function paginate<T extends ObjectLiteral>(
 
     const filterQuery = query.filter
         ? '&' +
-          stringify(
-              mapKeys(query.filter, (_param, name) => 'filter.' + name),
-              '&',
-              '=',
-              { encodeURIComponent: (str) => str }
-          )
+        stringify(
+            mapKeys(query.filter, (_param, name) => 'filter.' + name),
+            '&',
+            '=',
+            { encodeURIComponent: (str) => str }
+        )
         : ''
 
     const options = `&limit=${limit}${sortByQuery}${searchQuery}${searchByQuery}${selectQuery}${filterQuery}`
@@ -526,12 +526,12 @@ export async function paginate<T extends ObjectLiteral>(
         links:
             path !== null
                 ? {
-                      first: page == 1 ? undefined : buildLink(1),
-                      previous: page - 1 < 1 ? undefined : buildLink(page - 1),
-                      current: buildLink(page),
-                      next: page + 1 > totalPages ? undefined : buildLink(page + 1),
-                      last: page == totalPages || !totalItems ? undefined : buildLink(totalPages),
-                  }
+                    first: page == 1 ? undefined : buildLink(1),
+                    previous: page - 1 < 1 ? undefined : buildLink(page - 1),
+                    current: buildLink(page),
+                    next: page + 1 > totalPages ? undefined : buildLink(page + 1),
+                    last: page == totalPages || !totalItems ? undefined : buildLink(totalPages),
+                }
                 : ({} as Paginated<T>['links']),
     }
 
