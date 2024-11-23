@@ -381,6 +381,7 @@ export async function paginate<T extends ObjectLiteral>(
                             [property.column]: `("${property.column}", '"${query.search}"', FUZZY(0.9, 'similarCalculationMode=search, fuzzySubstringMatch=anywhere,searchMode=alphanum'))`,
                         })
 
+                    }
                 }
                 if (!useMultiWordSearch) {
                     // Strict search mode (default behavior)
