@@ -55,11 +55,12 @@
     "sqlite3": "^5.1.7",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typeorm": "github:davs20/typeorm#sap-hana",
+    "typeorm": "^0.3.17",
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "typeorm": "github:davs20/typeorm#sap-hana"
   },
   "peerDependencies": {
     "@nestjs/common": "^10.0.0",
