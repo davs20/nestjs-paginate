@@ -91,6 +91,8 @@ export interface PaginateConfig<T> {
     ignoreSearchByInQueryParam?: boolean
     ignoreSelectInQueryParam?: boolean
     multiWordSearch?: boolean
+    getDataAsRaw?: boolean
+    rowCountAsItIs?: boolean
 }
 
 export enum PaginationLimit {
@@ -433,11 +435,21 @@ export async function paginate<T extends ObjectLiteral>(
     }
 
     if (query.limit === PaginationLimit.COUNTER_ONLY) {
-        totalItems = await queryBuilder.getCount()
-    } else if (isPaginated) {
-        ;[items, totalItems] = await queryBuilder.getManyAndCount()
+        totalItems = await getCount(queryBuilder, config)
     } else {
-        items = await queryBuilder.getMany()
+       if (!isPaginated && !config.getDataAsRaw) {
+            items = await queryBuilder.getMany()
+        }
+        if (!isPaginated && config.getDataAsRaw) {
+            items = await queryBuilder.getRawMany()
+        }
+        if (isPaginated && !config.getDataAsRaw) {
+            ;[items, totalItems] = await queryBuilder.getManyAndCount()
+        }
+        if (isPaginated && config.getDataAsRaw) {
+            items = await queryBuilder.getRawMany()
+            totalItems = await getCount(queryBuilder, config)
+        }
     }
 
     const sortByQuery = sortBy.map((order) => `&sortBy=${order.join(':')}`).join('')
@@ -507,4 +519,25 @@ export async function paginate<T extends ObjectLiteral>(
     }
 
     return Object.assign(new Paginated<T>(), results)
+}
+
+
+export async function getCount<T extends ObjectLiteral>(
+    qb: SelectQueryBuilder<T>,
+    config: PaginateConfig<T>
+): Promise<number> {
+    if (!config.rowCountAsItIs) {
+        return qb.getCount()
+    }
+
+    const sql = qb.orderBy().limit().offset().take().skip().getQuery()
+
+    const result = await qb
+        .createQueryBuilder()
+        .select('COUNT(*)', 'total_rows')
+        .from(`(${sql})`, 'query_count')
+        .setParameters(qb.getParameters())
+        .getRawOne()
+
+    return Number(result.total_rows)
 }
